@@ -23,7 +23,7 @@ class Player:
     # Method to decrease the number of lives
     def decrease_lives(self) -> None:
         self.lives -= 1
-        if self.lives == 0:
+        if self.lives < 1:
             raise GameOver(f"Game Over! {self.name} is out of lives.")
 
     # Method to add points to the player's score
@@ -48,7 +48,7 @@ class Enemy:
     # Method to decrease the number of enemy lives
     def decrease_lives(self) -> None:
         self.lives -= 1
-        if self.lives == 0:
+        if self.lives < 1:
             raise EnemyDown("Enemy defeated!")
 
     # String representation of the enemy

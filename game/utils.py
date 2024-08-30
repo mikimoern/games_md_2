@@ -19,7 +19,7 @@ def print_message(message: str) -> None:
     print(message)
 
 
-# Function to create a player with a name and mode
+# Function to create a player name
 def create_player() -> tuple[Player, str]:
     name = ""
     while not name:
@@ -27,15 +27,19 @@ def create_player() -> tuple[Player, str]:
         if not name:
             print(INVALID_NAME_MESSAGE)
 
+    return Player(name)
+
+
+# Function handles the selection of the game mode
+def select_mode() -> str:
     mode_key = ""
     while mode_key not in MODES:
         mode_key = get_user_input("Select difficulty (1 - Normal, 2 - Hard): ").strip()
         if mode_key not in MODES:
             print(INVALID_MODE_MESSAGE)
 
-    mode = MODES[mode_key]  # Convert the key to mode value (e.g., "Normal" or "Hard")
-
-    return Player(name), mode
+    mode = MODES[mode_key]
+    return mode
 
 
 # Function to print the result of a fight

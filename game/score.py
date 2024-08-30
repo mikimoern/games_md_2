@@ -4,8 +4,10 @@ from settings import SCORE_FILE, MAX_RECORDS_NUMBER, MODES
 # Class to store player records
 class PlayerRecord:
     def __init__(self, name: str, mode: str, score: int) -> None:
+        if mode not in MODES.values():
+            raise ValueError(f"Invalid mode: {mode}")
         self.name = name
-        self.mode = mode if mode in MODES.values() else MODES[mode]  # Validate mode
+        self.mode = mode
         self.score = score
 
     # Comparison method to sort records by score
@@ -16,6 +18,10 @@ class PlayerRecord:
     def __str__(self) -> str:
         return f"{self.name} - {self.mode} - {self.score}"
 
+    # Method for comparing PlayerRecord instances based on name and mode
+    def __eq__(self, other: "PlayerRecord") -> bool:
+        return self.name == other.name and self.mode == other.mode
+
 
 # Class to manage a list of game records
 class GameRecord:
@@ -24,21 +30,14 @@ class GameRecord:
 
     # Add a new record or update an existing one
     def add_record(self, player_record: PlayerRecord) -> None:
-        existing_record = next(
-            (
-                record
-                for record in self.records
-                if record.name == player_record.name
-                and record.mode == player_record.mode
-            ),
-            None,
-        )
-        if existing_record:
+        try:
+            index = self.records.index(player_record)
+            existing_record = self.records[index]
             if player_record > existing_record:
-                self.records.remove(existing_record)
-                self.records.append(player_record)
-        else:
+                self.records[index] = player_record
+        except ValueError:
             self.records.append(player_record)
+
         self.prepare_records()
 
     # Prepare records: sort and limit to the maximum number of records
@@ -86,9 +85,30 @@ class ScoreHandler:
 
     # Write the current score records to a file
     def write_to_file(self) -> None:
+
+        # Create a list of valid record strings
+        valid_records = [
+            f"{record.name},{record.mode},{record.score}"
+            for record in self.game_record.records
+            if self.is_valid_record(record)
+        ]
+
+        # Join valid records as a single string with newline separation
+        content = "\n".join(valid_records)
+
+        # Write the content to the file
         with open(SCORE_FILE, "w") as f:
-            for record in self.game_record.records:
-                f.write(f"{record.name},{record.mode},{record.score}\n")
+            f.write(content)
+
+    # Method checks if the PlayerRecord instance has valid data
+    def is_valid_record(self, record: PlayerRecord) -> bool:
+        return (
+            isinstance(record.name, str)
+            and record.name.strip() != ""
+            and record.mode in MODES.values()
+            and isinstance(record.score, int)
+            and record.score >= 0
+        )
 
     # Display the scores
     def display(self) -> None:
